@@ -1,2 +1,2 @@
-# TSP-Optymalizacja-kombinatoryczna
-TSP-Optymalizacja-kombinatoryczna
+# TSP - Optymalizacja kombinatoryczna
+Travelling salesman problem
