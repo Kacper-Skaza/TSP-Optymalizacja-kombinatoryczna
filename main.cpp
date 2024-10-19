@@ -1,14 +1,23 @@
 #include <iostream>
 #include <vector>
+#include <climits>
 using namespace std;
 
-int minDistance(vector<vector<int> > &graph, vector<bool> &visited, int currentCity) {
-	int n = graph.size();
-	int minDist = INT_MAX;
-	int nextCity = -1;
+//graph - odleglosci miedzy poszczegolnymi miatami
+//visited - odwiedzone miasta
+//currentCity - numer aktualnego miasta
+
+int minDistance(vector<vector<int> > &graph, vector<bool> &visited, int currentCity) { // szukanie najbli≈ºszego miasta
+	int n;
+	int minDist;
+	int nextCity;
+	
+	n = graph.size();
+	minDist = INT_MAX;
+	nextCity = -1;
 
 	for (int i=0; i<n; i++) {
-		if (!visited[i] && graph[currentCity][i] < minDist) {
+		if (visited[i] == false && graph[currentCity][i] < minDist) { //graph[currentCity][i] != 0
 			minDist = graph[currentCity][i];
 			nextCity = i;
 		}
@@ -18,10 +27,14 @@ int minDistance(vector<vector<int> > &graph, vector<bool> &visited, int currentC
 }
 
 int tspGreedy(vector<vector<int> > &graph, int currentCity) {
-	int n = graph.size();
-	vector<bool> visited(n, false);
+	int n;
+	int totalCost;
+	vector<bool> visited;
+	
+	n = graph.size();
+	visited.assign(n, false);
 	visited[currentCity] = true;
-	int totalCost = 0;
+	totalCost = 0;
 
 	for (int i=0; i<n-1; i++) {
 		int nextCity = minDistance(graph, visited, currentCity);
@@ -30,21 +43,23 @@ int tspGreedy(vector<vector<int> > &graph, int currentCity) {
 		currentCity = nextCity;
 	}
 
-	totalCost += graph[currentCity][0]; // PowrÛt do miasta poczπtkowego
+	totalCost += graph[currentCity][0]; // Powr√≥t do miasta poczatkowego
 	return totalCost;
 }
 
 int main() {
-	vector<vector<int> > graph = {
+	vector<vector<int> > graph; 
+    	int result;
+	
+	graph = {  // co jesli graf nie jest pe≈Çny
 		{0, 10, 15, 20},
 		{10, 0, 35, 25},
 		{15, 35, 0, 30},
 		{20, 25, 30, 0}
 	};
 
-	int result = tspGreedy(graph, 0);
+	result = tspGreedy(graph, 0);
 	cout<<"Minimalny koszt znaleziony przez algorytm zachlanny: "<<result<<endl;
 
 	return 0;
 }
-
