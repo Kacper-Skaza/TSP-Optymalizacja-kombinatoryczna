@@ -3,21 +3,23 @@
 #include <climits>
 using namespace std;
 
-//graph - odleglosci miedzy poszczegolnymi miatami
-//visited - odwiedzone miasta
-//currentCity - numer aktualnego miasta
+/*	TODO:
+	Generator -> uwaga na powtorki punktow
+	Wczytywanie z pliku -> po wspolrzednych
+*/
 
-int minDistance(vector<vector<int> > &graph, vector<bool> &visited, int currentCity) { // szukanie najbliższego miasta
-	int n;
+// graph - odleglosci miedzy poszczegolnymi miastami
+// visited - odwiedzone miasta
+// currentCity - numer aktualnego miasta
+int minDistance(vector<vector<int> > &graph, vector<bool> &visited, int currentCity) { // Szukanie najblizszego miasta
 	int minDist;
 	int nextCity;
-	
-	n = graph.size();
+
 	minDist = INT_MAX;
 	nextCity = -1;
 
-	for (int i=0; i<n; i++) {
-		if (visited[i] == false && graph[currentCity][i] < minDist) { //graph[currentCity][i] != 0
+	for (int i=0; i<graph.size(); i++) {
+		if (visited[i] == false && graph[currentCity][i] < minDist) { // graph[currentCity][i] != 0
 			minDist = graph[currentCity][i];
 			nextCity = i;
 		}
@@ -27,39 +29,43 @@ int minDistance(vector<vector<int> > &graph, vector<bool> &visited, int currentC
 }
 
 int tspGreedy(vector<vector<int> > &graph, int currentCity) {
-	int n;
-	int totalCost;
 	vector<bool> visited;
-	
-	n = graph.size();
-	visited.assign(n, false);
+	int totalCost;
+
+	visited.assign(graph.size(), false);
 	visited[currentCity] = true;
 	totalCost = 0;
 
-	for (int i=0; i<n-1; i++) {
+	for (int i=0; i<graph.size()-1; i++) {
 		int nextCity = minDistance(graph, visited, currentCity);
 		totalCost += graph[currentCity][nextCity];
 		visited[nextCity] = true;
 		currentCity = nextCity;
+		cout<<currentCity<<", ";
 	}
 
-	totalCost += graph[currentCity][0]; // Powrót do miasta poczatkowego
+	totalCost += graph[currentCity][0]; // Powrot do miasta poczatkowego
 	return totalCost;
 }
 
+
+
 int main() {
 	vector<vector<int> > graph; 
-    	int result;
-	
-	graph = {  // co jesli graf nie jest pełny
+    int result=0, startCity=0;
+
+	graph = { // Co jesli graf nie jest pelny???
 		{0, 10, 15, 20},
 		{10, 0, 35, 25},
 		{15, 35, 0, 30},
 		{20, 25, 30, 0}
 	};
 
-	result = tspGreedy(graph, 0);
-	cout<<"Minimalny koszt znaleziony przez algorytm zachlanny: "<<result<<endl;
+	cout<<"Sciezka: "<<startCity<<", ";
+	result = tspGreedy(graph, startCity);
+	cout<<startCity<<endl;
+	cout<<"Minimalny koszt znaleziony przez algorytm zachlanny: "<<result;
 
 	return 0;
 }
+
