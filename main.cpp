@@ -4,6 +4,7 @@
 #include <ctime>
 #include <climits>
 #include <cstdlib>
+#include <cmath>
 using namespace std;
 
 /*	TODO:
@@ -15,7 +16,7 @@ void printVector2D(vector<vector<int>> &graph)
 {
 	for (int i=0; i<graph.size(); i++)
 	{
-		cout<<i<<": ";
+		cout<<i+1<<": ";
 
 		for (int j=0; j<graph[i].size(); j++)
 		{
@@ -80,8 +81,31 @@ vector<vector<int>> generateCoordinates()
 	return result;
 }
 
+//liczenie odległosci miedzy punktami i wpisywanie ich do miacierzy
+double calculateDistance(int x1, int x2, int y1, int y2){
+    double distance;
+	distance = sqrt(pow(x2 - x1, 2) + pow(y2 - y1, 2));  
+	return distance;
+}
+
+//wpisywanie wartosci do macierzy sasiedztwa
+vector<vector<double>> toAdjacencyMatrix(vector<vector<int>> &graph){
+	
+	int n = graph.size();
+    vector<vector<double>> adjMatrix(n, vector<double>(n, 0));
+
+	for (int i=0; i < n; i++){
+		for (int j=0; j < n; j++){
+			double dist;
+			dist = calculateDistance(graph[i][0], graph[j][0], graph[i][1], graph[j][1]);
+			adjMatrix[i][j] = dist;
+		}
+	}
+	return adjMatrix;
+}
+
 // Szukanie najblizszego miasta
-int minDistance(vector<vector<int>> &graph, vector<bool> &visited, int currentCity)
+int minDistance(vector<vector<double>> &graph, vector<bool> &visited, int currentCity)
 {
 	// graph - odleglosci miedzy poszczegolnymi miastami
 	// visited - odwiedzone miasta
@@ -105,12 +129,12 @@ int minDistance(vector<vector<int>> &graph, vector<bool> &visited, int currentCi
 }
 
 // Algorytm zachlanny TSP
-int tspGreedy(vector<vector<int>> &graph, int startCity)
+double tspGreedy(vector<vector<double>> &graph, int startCity)
 {
 	cout<<"Sciezka: "<<startCity<<", ";
 
 	vector<bool> visited;
-	int totalCost;
+	double totalCost;
 	int currentCity;
 
 	visited.assign(graph.size(), false);
@@ -137,8 +161,9 @@ int tspGreedy(vector<vector<int>> &graph, int startCity)
 
 int main()
 {
-	vector<vector<int>> graph, coordinates; 
-    int n=0, result=0, startCity=0;
+	vector<vector<int>> coordinates; 
+    int n=0, startCity=0;
+	double result=0;
 
 	while (n != 1 && n != 2)
 	{
@@ -161,13 +186,23 @@ int main()
 		printVector2D(coordinates);
 	}
 
-	graph =
-	{
-		{0, 10, 15, 20},
-		{10, 0, 35, 25},
-		{15, 35, 0, 30},
-		{20, 25, 30, 0}
-	};
+	vector<vector<double>> graph = toAdjacencyMatrix(coordinates);
+	for (const auto& row : graph) {
+        cout << "{";
+        for (size_t i = 0; i < row.size(); ++i) {
+            cout << row[i];
+            if (i < row.size() - 1) {
+                cout << ",";
+            }
+        }
+        cout << "}" << endl; }
+	// graph =
+	// {
+	// 	{0, 10, 15, 20},
+	// 	{10, 0, 35, 25},
+	// 	{15, 35, 0, 30},
+	// 	{20, 25, 30, 0}
+	// };
 
 	cout<<">> Wybierz miasto startowe:"<<endl;
 	cout<<">> ";
@@ -177,7 +212,7 @@ int main()
 	if (startCity < graph.size())
 	{
 		result = tspGreedy(graph, startCity);
-		cout<<"Minimalny koszt znaleziony przez algorytm zachlanny: "<<result;
+		cout<<"Minimalny koszt znaleziony przez algorytm zachlanny: "<<result<< endl;
 	}
 	else
 	{
