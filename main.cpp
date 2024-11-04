@@ -108,7 +108,7 @@ int minDistance(vector<vector<double>> &graph, vector<bool> &visited, int curren
 	// graph - odleglosci miedzy poszczegolnymi miastami
 	// visited - odwiedzone miasta
 	// currentCity - numer aktualnego miasta
-	int minDist;
+	double minDist;
 	int nextCity;
 
 	minDist = INT_MAX;
@@ -188,15 +188,15 @@ int main()
 	}
 
 	vector<vector<double>> graph = toAdjacencyMatrix(coordinates);
-	/*for (const auto& row : graph) {
-        cout << "{";
-        for (size_t i = 0; i < row.size(); ++i) {
-            cout << row[i];
-            if (i < row.size() - 1) {
-                cout << ",";
-            }
-        }
-        cout << "}" << endl; }*/
+	// for (const auto& row : graph) {
+    //     cout << "{";
+    //     for (size_t i = 0; i < row.size(); ++i) {
+    //         cout << row[i];
+    //         if (i < row.size() - 1) {
+    //             cout << ",";
+    //         }
+    //     }
+    //     cout << "}" << endl; }
 	// graph =
 	// {
 	// 	{0, 10, 15, 20},
