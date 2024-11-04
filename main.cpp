@@ -79,7 +79,7 @@ vector<vector<int>> generateCoordinates(int n)
 	return result;
 }
 
-//liczenie odległosci miedzy punktami i wpisywanie ich do miacierzy
+//liczenie odleglosci miedzy punktami i wpisywanie ich do miacierzy
 double calculateDistance(int x1, int x2, int y1, int y2){
     double distance;
 	distance = sqrt(pow(x2 - x1, 2) + pow(y2 - y1, 2));  
