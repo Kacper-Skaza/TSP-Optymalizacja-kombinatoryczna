@@ -16,13 +16,13 @@ void printVector2D(vector<vector<int>> &graph)
 {
 	for (int i=0; i<graph.size(); i++)
 	{
-		cout<<i+1<<": ";
+		cout<<i+1<<" ";
 
 		for (int j=0; j<graph[i].size(); j++)
 		{
 			cout<<graph[i][j];
 			if (j != graph[i].size()-1)
-				cout<<", ";
+				cout<<" ";
 		}
 
 		cout<<endl;
@@ -53,12 +53,10 @@ vector<vector<int>> readCoordinates(string fileName)
 }
 
 // Generowanie tablicy wspolrzednych
-vector<vector<int>> generateCoordinates()
+vector<vector<int>> generateCoordinates(int n)
 {
 	srand(time( nullptr ));
 	vector<vector<int>> result;
-	int n;
-	n = (rand()%21) + 40; // Zakres: <40, 60>
 
 	for (int i=0; i<n; i++)
 	{
@@ -162,7 +160,7 @@ double tspGreedy(vector<vector<double>> &graph, int startCity)
 int main()
 {
 	vector<vector<int>> coordinates; 
-    int n=0, startCity=0;
+    int n=0, m=0, startCity=0;
 	double result=0;
 
 	while (n != 1 && n != 2)
@@ -181,13 +179,16 @@ int main()
 	}
 	else if (n == 2)
 	{
-		coordinates = generateCoordinates();
+		cout<<">> Podaj ilosc miast:"<<endl;
+		cout<<">> ";
+		cin>>m;
+		coordinates = generateCoordinates(m);
 		cout<<"Wygenerowane dane: "<<endl;
 		printVector2D(coordinates);
 	}
 
 	vector<vector<double>> graph = toAdjacencyMatrix(coordinates);
-	for (const auto& row : graph) {
+	/*for (const auto& row : graph) {
         cout << "{";
         for (size_t i = 0; i < row.size(); ++i) {
             cout << row[i];
@@ -195,7 +196,7 @@ int main()
                 cout << ",";
             }
         }
-        cout << "}" << endl; }
+        cout << "}" << endl; }*/
 	// graph =
 	// {
 	// 	{0, 10, 15, 20},
