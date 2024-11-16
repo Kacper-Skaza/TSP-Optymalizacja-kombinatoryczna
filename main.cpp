@@ -318,7 +318,7 @@ int main()
 
 	if (n == 1)
 	{
-		coordinates = readCoordinates("Input.txt");
+		coordinates = readCoordinates("Input/Input.txt");
 	}
 	else if (n == 2)
 	{
