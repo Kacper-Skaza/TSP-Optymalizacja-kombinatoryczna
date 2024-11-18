@@ -123,7 +123,7 @@ vector<vector<int>> generateCoordinates(int n)
 }
 
 
-
+//----------------------Alg zachlanny----------------------------
 
 
 // Szukanie najblizszego miasta
@@ -176,7 +176,7 @@ double tspGreedy(vector<vector<double>> &graph, bool showPath)
 }
 
 
-
+//--------------------------Alg mrówkowy----------------------------------------
 
 
 // Funkcja wyboru nastepnego miasta na podstawie prawdopodobienstwa
@@ -191,11 +191,12 @@ int selectNextCity(int currentCity, vector<vector<double>> &pheromone, vector<ve
 	{
 		if (visited[i] == false)
 		{
-			probabilities[i] = pow(pheromone[currentCity][i], ALPHA) * pow(1.0 / graph[currentCity][i], BETA);
+			probabilities[i] = pow(pheromone[currentCity][i], ALPHA) * pow(1.0 / graph[currentCity][i], BETA); //licznik zapisywany w tablicy probabilities
 			sum += probabilities[i];
 		}
 	}
 
+	//metoda ruletki
 	double randVal = ((double) rand() / RAND_MAX) * sum;
 	double cumulative = 0.0;
 
@@ -203,6 +204,7 @@ int selectNextCity(int currentCity, vector<vector<double>> &pheromone, vector<ve
 	{
 		if (visited[i] == false)
 		{
+			//probabilities[i] = probabilities[i]; //dzielenie przez sum co stanowi pelny wzór
 			cumulative += probabilities[i];
 			if (cumulative >= randVal)
 				return i;
@@ -234,7 +236,7 @@ double antTravel(int startCity, vector<vector<double>> &graph, vector<vector<dou
 		currentCity = nextCity;
 	}
 
-	pathLength += graph[currentCity][startCity]; // Powrot do miasta pocz�tkowego
+	pathLength += graph[currentCity][startCity]; // Powrot do miasta poczatkowego
 	path.push_back(startCity);
 
 	// Sprawdzanie, czy znaleziono lepsza trase
@@ -248,31 +250,84 @@ double antTravel(int startCity, vector<vector<double>> &graph, vector<vector<dou
 }
 
 // Aktualizacja feromonow
+// void updatePheromones(vector<vector<double>> &pheromone, vector<vector<int>> &paths, vector<double> &lengths)
+// {
+// 	int n = pheromone.size();
+
+// 	// Parowanie feromonow
+// 	for (int i=0; i<n; i++)
+// 	{
+// 		for (int j=0; j<n; j++)
+// 		{
+// 			pheromone[i][j] *= (1.0 - RHO);
+// 		}
+// 	}
+
+// 	// Dodawanie nowych feromonow
+// 	for (int ant=0; ant<NUM_ANTS; ant++)
+// 	{
+// 		for (int i=0; i<n-1; i++)
+// 		{
+// 			int cityA = paths[ant][i];
+// 			int cityB = paths[ant][i+1];
+// 			pheromone[cityA][cityB] += Q / lengths[ant];
+// 			pheromone[cityB][cityA] += Q / lengths[ant]; // Symetria
+// 		}
+// 	}
+// }
+
 void updatePheromones(vector<vector<double>> &pheromone, vector<vector<int>> &paths, vector<double> &lengths)
 {
-	int n = pheromone.size();
-
-	// Parowanie feromonow
-	for (int i=0; i<n; i++)
-	{
-		for (int j=0; j<n; j++)
-		{
-			pheromone[i][j] *= (1.0 - RHO);
-		}
-	}
-
-	// Dodawanie nowych feromonow
-	for (int ant=0; ant<NUM_ANTS; ant++)
-	{
-		for (int i=0; i<n-1; i++)
-		{
-			int cityA = paths[ant][i];
-			int cityB = paths[ant][i+1];
-			pheromone[cityA][cityB] += Q / lengths[ant];
-			pheromone[cityB][cityA] += Q / lengths[ant]; // Symetria
-		}
-	}
+    int n = pheromone.size();
+    
+    vector<vector<double>> oldPheromone = pheromone; // wartości feromonów z poprzedniej iteracji
+    
+    //  Tau - poziom feromonow na krawedzi w danym momencie
+    vector<vector<double>> deltaTau(n, vector<double>(n, 0.0));
+    for (int ant = 0; ant < NUM_ANTS; ant++)
+    {
+        for (int i = 0; i < n-1; i++)
+        {
+            int cityA = paths[ant][i];
+            int cityB = paths[ant][i+1];
+            deltaTau[cityA][cityB] += Q / lengths[ant];
+            deltaTau[cityB][cityA] += Q / lengths[ant];
+        }
+        
+        int lastCity = paths[ant][n-1];  //powrót do miasta startowego
+        int firstCity = paths[ant][0];
+        deltaTau[lastCity][firstCity] += Q / lengths[ant];
+        deltaTau[firstCity][lastCity] += Q / lengths[ant];
+    }
+    
+    //Aktualizujemy feromony według wzoru 5.2 z pdf
+    for (int i = 0; i < n; i++)
+    {
+        for (int j = 0; j < n; j++)
+        {
+            pheromone[i][j] = RHO * oldPheromone[i][j] + deltaTau[i][j];
+        }
+    }
 }
+
+// void updatePheromones(vector<vector<double>> &pheromone, vector<vector<int>> &paths, vector<double> &lengths) //each time ant move from current city to the next
+// {
+//     int n = pheromone.size();
+    
+//     double bestLength = lengths[0]; // Znajdź najlepszą trasę (Lnn)
+//     for(int i = 1; i < lengths.size(); i++) {
+//         bestLength = min(bestLength, lengths[i]);
+//     }
+    
+//     double tau0 = 1.0 / (n * bestLength);  // Oblicz τ0 = 1/(n*Lnn)
+    
+//     // Aktualizacja feromonów według wzoru z pdf Pheromones
+//     for(int i = 0; i < n; i++) {
+//         for(int j = 0; j < n; j++) {
+//             pheromone[i][j] = RHO * pheromone[i][j] + (1-RHO) * tau0;
+//         }
+//     }
+// }
 
 // Algorytm mrowkowy TSP
 double tspAntColony(vector<vector<double>> &graph, bool showPath)
@@ -281,7 +336,7 @@ double tspAntColony(vector<vector<double>> &graph, bool showPath)
 
 	int n = graph.size();
 
-	vector<vector<double>> pheromone(n, vector<double>(n, 1.0));
+	vector<vector<double>> pheromone(n, vector<double>(n, 1.0));  //poczatkowo wypelniona wartosciami 1.0
 
 	vector<int> bestPath;
 	double bestLength = numeric_limits<double>::max();
