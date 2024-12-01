@@ -1,16 +1,16 @@
 #include <iostream>
 #include <fstream>
 #include <vector>
-#include <chrono>
-#include <random>
-#include <thread>
 #include <iomanip>
 #include <limits>
+#include <chrono>
+#include <cstdlib>
 #include <cmath>
+#include <ctime>
 using namespace std;
 
 /*	TODO:
-	Milej zabawy :D
+	Milej zabawy :/
 */
 
 // CZAS
@@ -19,28 +19,13 @@ long long Get_time()
 	return chrono::duration_cast<chrono::milliseconds>(chrono::high_resolution_clock::now().time_since_epoch()).count();
 }
 
-// GENERATOR LICZB LOSOWYCH
-int Random_num()
-{
-	static random_device rd;
-	static mt19937 gen(rd());
-	static uniform_int_distribution<> dis(0, RAND_MAX); // Zakres: <0, 32767>
-
-	return dis(gen);
-}
-
-// STALE
-const int NUM_INSTANCES = 10;			// Liczba instancji (ten sam algorytm uruchamiany n razy - bierzemy najlepszy wynik)
-const int NUM_ANTS = 100;				// Liczba mrowek
-const int MIN_ITERATIONS = 20;			// Min liczba iteracji
-const int MAX_ITERATIONS = 200;			// Max liczba iteracji
-const int MAX_SAME_ITERATIONS = 10;		// Max liczba takich samych iteracji
-
 // STROJENIE
-const double ALPHA = 3.0;				// Waga sladu feromonowego _> 3.0
-const double BETA = 2.0;				// Waga odleglosci _> 2.0
-const double RHO = 0.75;				// Wspolczynnik parowania feromonow _> 0.75 (wieksza losowosc - dluzsze zanikanie)
-const double Q = 100.0;					// Stala uzywana do aktualizacji feromonow _> 100.0
+const int NUM_ANTS = 10;			// Liczba mrowek
+const int MAX_ITERATIONS = 100;		// Maksymalna liczba iteracji
+const double ALPHA = 1.0;			// Waga sladu feromonowego
+const double BETA = 5.0;			// Waga heurystyki (odleglosci)
+const double RHO = 0.5;				// Wspolczynnik parowania feromonow
+const double Q = 100.0;				// Stala uzywana do aktualizacji feromonow
 
 
 
@@ -113,13 +98,14 @@ vector<vector<int>> readCoordinates(string fileName)
 // Generowanie tablicy wspolrzednych
 vector<vector<int>> generateCoordinates(int n)
 {
+	srand(time( nullptr ));
 	vector<vector<int>> result(0);
 
 	for (int i=0; i<n; i++)
 	{
 		int x=0, y=0;
-		x = (Random_num()%1000) + 1; // Zakres: <1, 1000>
-		y = (Random_num()%1000) + 1; // Zakres: <1, 1000>
+		x = (rand()%1000) + 1; // Zakres: <1, 1000>
+		y = (rand()%1000) + 1; // Zakres: <1, 1000>
 
 		for (int j=0; j<result.size(); j++)
 		{
@@ -141,7 +127,7 @@ vector<vector<int>> generateCoordinates(int n)
 
 
 // Szukanie najblizszego miasta
-int minDistance(const vector<vector<double>> &graph, const vector<bool> &visited, const int currentCity)
+int minDistance(vector<vector<double>> &graph, vector<bool> &visited, int currentCity)
 {
 	// graph - odleglosci miedzy poszczegolnymi miastami
 	// visited - odwiedzone miasta
@@ -162,7 +148,7 @@ int minDistance(const vector<vector<double>> &graph, const vector<bool> &visited
 }
 
 // Algorytm zachlanny TSP
-double tspGreedy(const vector<vector<double>> &graph, const bool showPath)
+double tspGreedy(vector<vector<double>> &graph, bool showPath)
 {
 	if (showPath == true)
 		cout<<endl<<"Znaleziona trasa: 1, ";
@@ -194,10 +180,10 @@ double tspGreedy(const vector<vector<double>> &graph, const bool showPath)
 
 
 // Aktualizacja feromonow
-void updatePheromones(	const int &n,
-						vector<vector<double>> &pheromone,
-						const vector<vector<int>> &paths, const vector<double> &lengths)
+void updatePheromones(vector<vector<double>> &pheromone, vector<vector<int>> &paths, vector<double> &lengths)
 {
+	int n = pheromone.size();
+
 	vector<vector<double>> deltaTau(n, vector<double>(n, 0.0)); // Poziom feromonow na krawedzi
 
 	// Obliczamy deltaTau
@@ -231,9 +217,10 @@ void updatePheromones(	const int &n,
 }
 
 // Funkcja wyboru nastepnego miasta na podstawie prawdopodobienstwa
-int selectNextCity(	const int &n, const int &currentCity,
-					const vector<vector<double>> &graph, const vector<vector<double>> &pheromone, const vector<bool> &visited)
+int selectNextCity(int currentCity, vector<vector<double>> &pheromone, vector<vector<double>> &graph, vector<bool> &visited)
 {
+	int n = graph.size();
+
 	// Obliczamy prawdopodobienstwa
 	vector<double> probabilities(n, 0.0);
 	double sum = 0.0;
@@ -248,7 +235,7 @@ int selectNextCity(	const int &n, const int &currentCity,
 	}
 
 	// Metoda ruletki
-	double randVal = (Random_num()*sum) / (RAND_MAX*1.0);
+	double randVal = (rand()*sum) / (RAND_MAX*1.0);
 	double cumulative = 0.0;
 
 	for (int i=0; i<n; i++)
@@ -265,135 +252,76 @@ int selectNextCity(	const int &n, const int &currentCity,
 }
 
 // Funkcja wykonujaca trase dla jednej mrowki
-void antTravel(	const int &n, const int antNum,
-				vector<vector<int>> &paths, vector<double> &lengths,
-				const vector<vector<double>> &graph, const vector<vector<double>> &pheromone)
+double antTravel(int startCity, vector<vector<double>> &graph, vector<vector<double>> &pheromone, vector<int> &bestPath, double &bestLength)
 {
+	int n = graph.size();
+
 	vector<bool> visited(n, false);
 	vector<int> path(0);
-	double length = 0.0;
-	int startCity = Random_num() % n;
 	int currentCity = startCity;
+	double pathLength = 0.0;
 
-	// Odwiedzenie miasta poczatkowego
-	visited[currentCity] = true;
 	path.push_back(currentCity);
+	visited[currentCity] = true;
 
-	// Odwiedzenie pozostalych miast
 	for (int i=1; i<n; i++)
 	{
-		int nextCity = selectNextCity(n, currentCity, graph, pheromone, visited);
+		int nextCity = selectNextCity(currentCity, pheromone, graph, visited);
 		path.push_back(nextCity);
 		visited[nextCity] = true;
-		length += graph[currentCity][nextCity];
+		pathLength += graph[currentCity][nextCity];
 		currentCity = nextCity;
 	}
 
-	// Powrot do miasta poczatkowego
-	length += graph[currentCity][startCity];
+	pathLength += graph[currentCity][startCity]; // Powrot do miasta poczatkowego
 	path.push_back(startCity);
 
-	// Zapisywanie wynikow
-	lengths[antNum] = length;
-	paths[antNum] = path;
+	// Sprawdzanie, czy znaleziono lepsza trase
+	if (pathLength < bestLength)
+	{
+		bestPath = path;
+		bestLength = pathLength;
+	}
+
+	return pathLength;
 }
 
 // Algorytm mrowkowy TSP
-void tspAntColony(	const int &n,
-					vector<int> &bestPath, double &bestLength,
-					const vector<vector<double>> &graph)
+double tspAntColony(vector<vector<double>> &graph, bool showPath)
 {
-	vector<vector<double>> pheromone(n, vector<double>(n, 1.0));
-	int sameResult = 0;
+	srand(time( nullptr ));
+
+	int n = graph.size();
+
+	vector<vector<double>> pheromone(n, vector<double>(n, 1.0)); //poczatkowo wypelniona wartosciami 1.0
+
+	vector<int> bestPath;
+	double bestLength = numeric_limits<double>::max();
 
 	for (int i=0; i<MAX_ITERATIONS; i++)
 	{
 		vector<vector<int>> paths(NUM_ANTS);
 		vector<double> lengths(NUM_ANTS);
 
-		// Wektor watkow
-		vector<thread> threads(0);
-
-		// Symulacja dla kazdej mrowki na osobnym watku
+		// Symulacja dla kazdej mrowki
 		for (int ant=0; ant<NUM_ANTS; ant++)
 		{
-			//antTravel(n, ant, paths, lengths, graph, pheromone);
-			threads.emplace_back(antTravel,
-									ref(n), ant,
-									ref(paths), ref(lengths),
-									ref(graph), ref(pheromone));
-		}
-
-		// Oczekiwanie na zakonczenie watkow
-		for (auto &thread : threads)
-		{
-			thread.join();
-		}
-
-		// Sprawdzanie, czy znaleziono lepsza trase
-		for (int ant=0; ant<NUM_ANTS; ant++)
-		{
-			if (lengths[ant] < bestLength)
-			{
-				bestLength = lengths[ant];
-				bestPath = paths[ant];
-				sameResult = -1;
-			}
+			int startCity = rand() % n;
+			lengths[ant] = antTravel(startCity, graph, pheromone, bestPath, bestLength);
+			paths[ant] = bestPath;
 		}
 
 		// Aktualizacja feromonow
-		updatePheromones(n, pheromone, paths, lengths);
-
-		// Sprawdzenie, czy wynik sie½ poprawia
-		sameResult++;
-		if (sameResult > MAX_SAME_ITERATIONS && i > MIN_ITERATIONS)
-			break;
-	}
-}
-
-double tspAntColonyInstanceManager(const vector<vector<double>> &graph, const bool showPath)
-{
-	int n = graph.size();
-
-	vector<vector<int>> paths(NUM_INSTANCES, vector<int>(0));
-	vector<double> lengths(NUM_INSTANCES, numeric_limits<double>::max());
-	vector<int> bestPath(0);
-	double bestLength = numeric_limits<double>::max();
-
-	// Wektor watkow
-	vector<thread> threads(0);
-
-	// Uruchamianie instancji
-	for (int i=0; i<NUM_INSTANCES; i++)
-	{
-		//tspAntColony(n, paths[i], lengths[i], graph);
-		threads.emplace_back(tspAntColony, ref(n), ref(paths[i]), ref(lengths[i]), ref(graph));
-	}
-
-	// Oczekiwanie na zakonczenie watkow
-	for (auto &thread : threads)
-	{
-		thread.join();
-	}
-
-	// Wybor najlepszego wyniku
-	for (int i=0; i<NUM_INSTANCES; i++)
-	{
-		if (lengths[i] < bestLength)
-		{
-			bestLength = lengths[i];
-			bestPath = paths[i];
-		}
+		updatePheromones(pheromone, paths, lengths);
 	}
 
 	if (showPath == true)
 	{
-		cout<<endl<<"Znaleziona trasa: ";
-		for (int i=0; i<n; i++)
+		cout<<endl<<"Znaleziona trasa:";
+		for (int city : bestPath)
 		{
-			cout<<bestPath[i]+1<<", ";
+			cout << city << " ";
 		}
-		cout<<bestPath[0]+1<<";"<<endl;
 	}
 
 	return bestLength;
@@ -405,6 +333,8 @@ double tspAntColonyInstanceManager(const vector<vector<double>> &graph, const bo
 
 int main()
 {
+	srand(time( nullptr ));
+
 	cout<<">> Legenda zrodel danych:"<<endl;
 	cout<<"1 - Ranking: 'berlin52.txt'"<<endl;
 	cout<<"2 - Ranking: 'bier127.txt'"<<endl;
@@ -487,7 +417,7 @@ int main()
 
 			time_1 = Get_time();
 			{
-				result = tspAntColonyInstanceManager(graph, false); // false/true -> wyswietlanie znalezionej trasy
+				result = tspAntColony(graph, false); // false/true -> wyswietlanie znalezionej trasy
 			}
 			time_2 = Get_time() + 10;
 			cout<<">> Algorytm mrowkowy ["<<(time_2-time_1)/1000.0<<"s]: "<<result<<endl;
