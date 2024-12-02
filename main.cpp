@@ -30,17 +30,17 @@ int Random_num()
 }
 
 // STALE
-const int NUM_INSTANCES = 10;			// Liczba instancji (ten sam algorytm uruchamiany n razy - bierzemy najlepszy wynik)
-const int NUM_ANTS = 100;				// Liczba mrowek
 const int MIN_ITERATIONS = 20;			// Min liczba iteracji
 const int MAX_ITERATIONS = 200;			// Max liczba iteracji
 const int MAX_SAME_ITERATIONS = 10;		// Max liczba takich samych iteracji
 
 // STROJENIE
-const double ALPHA = 3.0;				// Waga sladu feromonowego _> 3.0
-const double BETA = 2.0;				// Waga odleglosci _> 2.0
-const double RHO = 0.75;				// Wspolczynnik parowania feromonow _> 0.75 (wieksza losowosc - dluzsze zanikanie)
-const double Q = 100.0;					// Stala uzywana do aktualizacji feromonow _> 100.0
+int NUM_INSTANCES = 10;		// Liczba instancji (ten sam algorytm uruchamiany n razy - bierzemy najlepszy wynik)
+int NUM_ANTS = 100;			// Liczba mrowek
+double ALPHA = 3.0;			// Waga sladu feromonowego
+double BETA = 2.0;			// Waga odleglosci
+double RHO = 0.75;			// Wspolczynnik parowania feromonow (wieksza losowosc - dluzsze zanikanie)
+double Q = 100.0;			// Stala uzywana do aktualizacji feromonow
 
 
 
@@ -435,30 +435,44 @@ int main()
 		if (n == 1)
 		{
 			coordinates = readCoordinates("Data/Ranking/berlin52.txt");
+			NUM_INSTANCES = 10; NUM_ANTS = 100;
+			ALPHA = 3.0; BETA = 2.0; RHO = 0.75; Q = 100.0;
 		}
 		else if (n == 2)
 		{
 			coordinates = readCoordinates("Data/Ranking/bier127.txt");
+			NUM_INSTANCES = 10; NUM_ANTS = 100;
+			ALPHA = 6.0; BETA = 3.0; RHO = 0.75; Q = 100.0;
 		}
 		else if (n == 3)
 		{
 			coordinates = readCoordinates("Data/Ranking/tsp250.txt");
+			NUM_INSTANCES = 1; NUM_ANTS = 100;
+			ALPHA = 3.0; BETA = 2.0; RHO = 0.75; Q = 100.0;
 		}
 		else if (n == 4)
 		{
 			coordinates = readCoordinates("Data/Ranking/tsp500.txt");
+			NUM_INSTANCES = 1; NUM_ANTS = 100;
+			ALPHA = 3.0; BETA = 4.0; RHO = 0.75; Q = 100.0;
 		}
 		else if (n == 5)
 		{
 			coordinates = readCoordinates("Data/Ranking/tsp1000.txt");
+			NUM_INSTANCES = 1; NUM_ANTS = 100;
+			ALPHA = 3.0; BETA = 2.0; RHO = 0.75; Q = 100.0;
 		}
 		else if (n == 6)
 		{
 			coordinates = readCoordinates("Data/Test.txt");
+			NUM_INSTANCES = 10; NUM_ANTS = 100;
+			ALPHA = 3.0; BETA = 2.0; RHO = 0.75; Q = 100.0;
 		}
 		else if (n == 7)
 		{
 			coordinates = readCoordinates("Data/Input.txt");
+			NUM_INSTANCES = 10; NUM_ANTS = 100;
+			ALPHA = 3.0; BETA = 2.0; RHO = 0.75; Q = 100.0;
 		}
 		else if (n == 8)
 		{
@@ -468,6 +482,9 @@ int main()
 			cout<<endl;
 
 			coordinates = generateCoordinates(m);
+			NUM_INSTANCES = 10; NUM_ANTS = 100;
+			ALPHA = 3.0; BETA = 2.0; RHO = 0.75; Q = 100.0;
+
 			cout<<">> Wygenerowane dane: "<<endl;
 			printVector2D(coordinates);
 		}
