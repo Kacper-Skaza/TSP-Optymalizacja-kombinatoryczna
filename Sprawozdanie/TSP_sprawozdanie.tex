@@ -1,0 +1,575 @@
+\documentclass{article}
+\usepackage{array}
+\usepackage{geometry}
+\geometry{a4paper, margin=1in}
+\renewcommand\arraystretch{1.4}
+\usepackage[polish]{babel}
+\usepackage[utf8]{inputenc}
+\usepackage[T1]{fontenc}
+\usepackage{pgfplots}
+\usepackage{anysize}
+\usepackage{gensymb}
+\usepackage{amsmath} %koniecznie
+\usepackage{tikz}
+\usepackage{algorithm}
+\usepackage{algpseudocode}
+%\makeatletter
+%\renewcommand{\ALG@name}{}
+%\renewcommand{\thealgorithm}{} 
+%\makeatother
+\usepackage{listings}
+%\usepackage{pseudocode}
+%\usepackage[ruled,vlined]{algorithm2e}
+%\usepackage[linesnumbered,ruled,vlined]{algorithm2e}
+\usepackage{fancyvrb}
+\pgfplotsset{compat=newest}
+
+
+
+\title{Problem komiwojażera - TSP}
+\date{}
+
+
+\begin{document}
+\maketitle
+
+\begin{flushleft}
+	Julia Mista 160173\\
+	Kacper Skaza 160174
+\end{flushleft}
+
+\section{Algorytm mrówkowy}
+\subsection{Inicjalizacja}
+Jako instancję poczatkową wybraliśmy berlin52, dla której wartości współrzę
+dnych punktów zostały przedstawione w skali 1:10 dla zwiększenia przejrzystości wykresu.
+\newline
+\newline
+\newline
+\begin{center}
+	\begin{tikzpicture}[scale=0.08, every node/.style={scale=0.8}]
+		% Oś układu współrzędnych
+		 % Układ współrzędnych
+		\draw[->] (0, 0) -- (180, 0) node[below] {X}; % Oś X
+		\draw[->] (0, 0) -- (0, 120) node[left] {Y};  % Oś Y
+		
+		% Podziałki na osi X
+		\foreach \x in {20, 40, 60, 80, 100, 120, 140, 160} {
+			\draw (\x, 0) -- (\x, -2) node[below] {\x};
+		}
+		
+		% Podziałki na osi Y
+		\foreach \y in {20, 40, 60, 80, 100} {
+			\draw (0, \y) -- (-2, \y) node[left] {\y};
+		}
+		
+		% Punkty i ich etykiety
+		\node[circle, fill=blue, inner sep=2pt, label=above:{1}] at (56.5, 57.5) {};
+		\node[circle, fill=blue, inner sep=2pt, label=above:{2}] at (2.5, 18.5) {};
+		\node[circle, fill=blue, inner sep=2pt, label=above:{3}] at (34.5, 75) {};
+		\node[circle, fill=blue, inner sep=2pt, label=above:{4}] at (94.5, 68.5) {};
+		\node[circle, fill=blue, inner sep=2pt, label=above:{5}] at (84.5, 65.5) {};
+		\node[circle, fill=blue, inner sep=2pt, label=above:{6}] at (88, 66) {};
+		\node[circle, fill=blue, inner sep=2pt, label=above:{7}] at (2.5, 23) {};
+		\node[circle, fill=blue, inner sep=2pt, label=above:{8}] at (52.5, 100) {};
+		\node[circle, fill=blue, inner sep=2pt, label=above:{9}] at (58, 117.5) {};
+		\node[circle, fill=blue, inner sep=2pt, label=above:{10}] at (65, 113) {};
+		\node[circle, fill=blue, inner sep=2pt, label=above:{11}] at (160.5, 62) {};
+		\node[circle, fill=blue, inner sep=2pt, label=above:{12}] at (122, 58) {};
+		\node[circle, fill=blue, inner sep=2pt, label=above:{13}] at (146.5, 20) {};
+		\node[circle, fill=blue, inner sep=2pt, label=above:{14}] at (153, 0.5) {};
+		\node[circle, fill=blue, inner sep=2pt, label=above:{15}] at (84.5, 68) {};
+		\node[circle, fill=blue, inner sep=2pt, label=above:{16}] at (72.5, 37) {};
+		\node[circle, fill=blue, inner sep=2pt, label=above:{17}] at (14.5, 66.5) {};
+		\node[circle, fill=blue, inner sep=2pt, label=above:{18}] at (41.5, 63.5) {};
+		\node[circle, fill=blue, inner sep=2pt, label=above:{19}] at (51, 87.5) {};
+		\node[circle, fill=blue, inner sep=2pt, label=above:{20}] at (56, 36.5) {};
+		\node[circle, fill=blue, inner sep=2pt, label=above:{21}] at (30, 46.5) {};
+		\node[circle, fill=blue, inner sep=2pt, label=above:{22}] at (52, 58.5) {};
+		\node[circle, fill=blue, inner sep=2pt, label=above:{23}] at (48, 41.5) {};
+		\node[circle, fill=blue, inner sep=2pt, label=above:{24}] at (83.5, 62.5) {};
+		\node[circle, fill=blue, inner sep=2pt, label=above:{25}] at (97.5, 58) {};
+		\node[circle, fill=blue, inner sep=2pt, label=above:{26}] at (121.5, 24.5) {};
+		\node[circle, fill=blue, inner sep=2pt, label=above:{27}] at (132, 31.5) {};
+		\node[circle, fill=blue, inner sep=2pt, label=above:{28}] at (125, 40) {};
+		\node[circle, fill=blue, inner sep=2pt, label=above:{29}] at (66, 18) {};
+		\node[circle, fill=blue, inner sep=2pt, label=above:{30}] at (41, 25) {};
+		\node[circle, fill=blue, inner sep=2pt, label=above:{31}] at (42, 55.5) {};
+		\node[circle, fill=blue, inner sep=2pt, label=above:{32}] at (57.5, 66.5) {};
+		\node[circle, fill=blue, inner sep=2pt, label=above:{33}] at (115, 116) {};
+		\node[circle, fill=blue, inner sep=2pt, label=above:{34}] at (70, 58) {};
+		\node[circle, fill=blue, inner sep=2pt, label=above:{35}] at (68.5, 59.5) {};
+		\node[circle, fill=blue, inner sep=2pt, label=above:{36}] at (68.5, 61) {};
+		\node[circle, fill=blue, inner sep=2pt, label=above:{37}] at (77, 61) {};
+		\node[circle, fill=blue, inner sep=2pt, label=above:{38}] at (79.5, 64.5) {};
+		\node[circle, fill=blue, inner sep=2pt, label=above:{39}] at (72, 63.5) {};
+		\node[circle, fill=blue, inner sep=2pt, label=above:{40}] at (76, 65) {};
+		\node[circle, fill=blue, inner sep=2pt, label=above:{41}] at (47.5, 96) {};
+		\node[circle, fill=blue, inner sep=2pt, label=above:{42}] at (9.5, 26) {};
+		\node[circle, fill=blue, inner sep=2pt, label=above:{43}] at (87.5, 92) {};
+		\node[circle, fill=blue, inner sep=2pt, label=above:{44}] at (70, 50) {};
+		\node[circle, fill=blue, inner sep=2pt, label=above:{45}] at (55.5, 81.5) {};
+		\node[circle, fill=blue, inner sep=2pt, label=above:{46}] at (83, 48.5) {};
+		\node[circle, fill=blue, inner sep=2pt, label=above:{47}] at (117, 6.5) {};
+		\node[circle, fill=blue, inner sep=2pt, label=above:{48}] at (83, 61) {};
+		\node[circle, fill=blue, inner sep=2pt, label=above:{49}] at (60.5, 62.5) {};
+		\node[circle, fill=blue, inner sep=2pt, label=above:{50}] at (59.5, 36) {};
+		\node[circle, fill=blue, inner sep=2pt, label=above:{51}] at (134, 72.5) {};
+		\node[circle, fill=blue, inner sep=2pt, label=above:{52}] at (174, 24.5) {};
+	\end{tikzpicture}
+\end{center}
+\newpage
+\subsection{Opis algorytmu}
+Algorytm mrówkowy oparty jest na symulacji zachowania mrówek, które poszukując najkrótszej trasy między punktami pozostawiaja po sobie feromony. Nasz kod podzielony jest na kilka głównych funkcji takich jak: \textit{tspAntColony, antTravel, selectNextCity} i \textit{updatePheromones}. Algorytm zaczyna się od wywołania funkcji \textit{tspAntColony}, która zgodnie ustaloną ilością iteracji oraz ilością mrówek wywołuje funkcję \textit{antTravel}, wykonujacą trase dla jednej mrówki. Wybiera ona losowy punkt startowy, a następnie przechodzi przez resztę grafu, wybierając kolejne destynacje na podstawie prawdopodobieństwa zależnego od intensywności feromonu i odległości między punktami. Po przejściu wszystkich mrówek w danej iteracji wywoływana jest funkcja \textit{updatePheromones}, odpowiadajaca za aktualizacje poziomów feromonów w grafie. 
+\subsection{Pseudokod}
+
+\begin{Verbatim}[commandchars=\\\{\}]
+funkcja updatePheromones(n, pheromone, paths, lengths):
+	deltaTau [0..n-1][0..n-1] ← 0.0
+	
+	dla ant = 0,1,...,NUM_ANTS-1 wykonuj:
+	    dla i = 0,1,...,n - 2 wykonuj:
+	        cityA ← paths[ant][i]
+	        cityB ← paths[ant][i+1]
+	        deltaTau[cityA][cityB] ← deltaTau[cityA][cityB] + Q / lengths[ant]
+	        deltaTau[cityB][cityA] ← deltaTau[cityB][cityA] + Q / lengths[ant]
+	
+	    lastCity ← paths[ant][n-1]
+	    firstCity ← paths[ant][0]
+	    deltaTau[lastCity][firstCity] ← deltaTau[lastCity][firstCity] + Q / lengths[ant]
+	    deltaTau[firstCity][lastCity] ← deltaTau[firstCity][lastCity] + Q / lengths[ant]
+	
+	dla i = 0,1,...,n - 1 wykonuj:
+	    dla j = 0,1,...,n - 1 wykonuj:
+	        pheromone[i][j] ← RHO * pheromone[i][j] + deltaTau[i][j]
+	            
+	            
+funkcja selectNextCity(n, currentCity, graph, pheromone, visited):
+    probabilities [0..n-1] ← 0.0
+    sum ← 0.0
+    
+    dla i = 0,1,...,n-1 wykonuj:
+        jeżeli visited[i] = Fałsz to:
+            probabilities[i] ← (pheromone[currentCity][i]^ALPHA) *
+            ((1.0 / graph[currentCity][i])^BETA)
+            sum ← sum + probabilities[i]
+    
+    randVal ← (losowa_liczba() * sum) / (RAND_MAX * 1.0)
+    cumulative ← 0.0
+    
+    dla i = 0,1,...,n - 1 wykonuj:
+        jeżeli visited[i] = Fałsz to:
+            cumulative ← cumulative + probabilities[i]
+            jeżeli cumulative \(\geq\) randVal to:
+                zwróć i
+    
+    zwróć -1 
+    
+    
+    
+funkcja antTravel(n, antNum, paths, lengths, graph, pheromone):
+    visited [0..n-1] ← Fałsz
+    path []
+    length ← 0.0
+    startCity ← losowa_liczba() mod n
+    currentCity ← startCity
+    
+    visited[currentCity] ← Prawda
+    dodaj currentCity do path
+    
+    dla i = 0,1,...,n-1 wykonuj:
+        nextCity ← selectNextCity(n, currentCity, graph, pheromone, visited)
+        dodaj nextCity do path
+        visited[nextCity] ← Prawda
+        length ← length + graph[currentCity][nextCity]
+        currentCity ← nextCity
+    
+    length ← length + graph[currentCity][startCity]
+    dodaj startCity do path
+    
+    lengths[antNum] ← length
+    paths[antNum] ← path
+    
+    
+funkcja tspAntColony(n, bestPath, bestLength, graph):
+    pheromone [0..n-1][0..n-1] ← 1.0
+    sameResult ← 0
+    
+    dla i = 0,1,...,MAX_ITERATIONS wykonuj:
+    paths [0..NUM_ANTS-1][]
+    lengths [0..NUM_ANTS-1]
+    
+    threads []
+    
+    dla ant = 0,1,...,NUM_ANTS - 1 wykonuj:
+        dodaj nowy wątek do threads z wywołaniem antTravel(n, ant, paths,
+        lengths, graph, pheromone)
+    
+    dla każdego wątku w threads:
+        poczekaj na zakończenie wątku
+    
+    dla ant = 0,1,...,NUM_ANTS - 1 wykonuj:
+        jeżeli lengths[ant] < bestLength to:
+            bestLength ← lengths[ant]
+            bestPath ← paths[ant]
+            sameResult ← -1
+    
+    updatePheromones(n, pheromone, paths, lengths)
+    
+    sameResult ← sameResult + 1
+    jeżeli sameResult > MAX_SAME_ITERATIONS i i > MIN_ITERATIONS:
+        zakończ algorytm
+    
+	
+\end{Verbatim}
+
+\subsection{Przykład działania}
+\begin{itemize}
+	\item po wykonaniu pierwszej iteracji
+\begin{center}
+	\begin{tikzpicture}[scale=0.07, every node/.style={scale=0.8}]
+		% Oś układu współrzędnych
+		\draw[->] (0, 0) -- (180, 0) node[below] {X}; % Oś X
+		\draw[->] (0, 0) -- (0, 120) node[left] {Y};  % Oś Y
+		
+		% Podziałki na osi X
+		\foreach \x in {20, 40, 60, 80, 100, 120, 140, 160} {
+			\draw (\x, 0) -- (\x, -2) node[below] {\x};
+		}
+		% Podziałki na osi Y
+		\foreach \y in {20, 40, 60, 80, 100} {
+			\draw (0, \y) -- (-2, \y) node[left] {\y};
+		}
+		
+		% Punkty i ich etykiety
+		\node[circle, fill=blue, inner sep=2pt, label=above:{1}] at (56.5, 57.5) {};
+		\node[circle, fill=blue, inner sep=2pt, label=above:{2}] at (2.5, 18.5) {};
+		\node[circle, fill=blue, inner sep=2pt, label=above:{3}] at (34.5, 75) {};
+		\node[circle, fill=blue, inner sep=2pt, label=above:{4}] at (94.5, 68.5) {};
+		\node[circle, fill=blue, inner sep=2pt, label=above:{5}] at (84.5, 65.5) {};
+		\node[circle, fill=blue, inner sep=2pt, label=above:{6}] at (88, 66) {};
+		\node[circle, fill=blue, inner sep=2pt, label=above:{7}] at (2.5, 23) {};
+		\node[circle, fill=blue, inner sep=2pt, label=above:{8}] at (52.5, 100) {};
+		\node[circle, fill=blue, inner sep=2pt, label=above:{9}] at (58, 117.5) {};
+		\node[circle, fill=blue, inner sep=2pt, label=above:{10}] at (65, 113) {};
+		\node[circle, fill=blue, inner sep=2pt, label=above:{11}] at (160.5, 62) {};
+		\node[circle, fill=blue, inner sep=2pt, label=above:{12}] at (122, 58) {};
+		\node[circle, fill=blue, inner sep=2pt, label=above:{13}] at (146.5, 20) {};
+		\node[circle, fill=blue, inner sep=2pt, label=above:{14}] at (153, 0.5) {};
+		\node[circle, fill=blue, inner sep=2pt, label=above:{15}] at (84.5, 68) {};
+		\node[circle, fill=blue, inner sep=2pt, label=above:{16}] at (72.5, 37) {};
+		\node[circle, fill=blue, inner sep=2pt, label=above:{17}] at (14.5, 66.5) {};
+		\node[circle, fill=blue, inner sep=2pt, label=above:{18}] at (41.5, 63.5) {};
+		\node[circle, fill=blue, inner sep=2pt, label=above:{19}] at (51, 87.5) {};
+		\node[circle, fill=blue, inner sep=2pt, label=above:{20}] at (56, 36.5) {};
+		\node[circle, fill=blue, inner sep=2pt, label=above:{21}] at (30, 46.5) {};
+		\node[circle, fill=blue, inner sep=2pt, label=above:{22}] at (52, 58.5) {};
+		\node[circle, fill=blue, inner sep=2pt, label=above:{23}] at (48, 41.5) {};
+		\node[circle, fill=blue, inner sep=2pt, label=above:{24}] at (83.5, 62.5) {};
+		\node[circle, fill=blue, inner sep=2pt, label=above:{25}] at (97.5, 58) {};
+		\node[circle, fill=blue, inner sep=2pt, label=above:{26}] at (121.5, 24.5) {};
+		\node[circle, fill=blue, inner sep=2pt, label=above:{27}] at (132, 31.5) {};
+		\node[circle, fill=blue, inner sep=2pt, label=above:{28}] at (125, 40) {};
+		\node[circle, fill=blue, inner sep=2pt, label=above:{29}] at (66, 18) {};
+		\node[circle, fill=blue, inner sep=2pt, label=above:{30}] at (41, 25) {};
+		\node[circle, fill=blue, inner sep=2pt, label=above:{31}] at (42, 55.5) {};
+		\node[circle, fill=blue, inner sep=2pt, label=above:{32}] at (57.5, 66.5) {};
+		\node[circle, fill=blue, inner sep=2pt, label=above:{33}] at (115, 116) {};
+		\node[circle, fill=blue, inner sep=2pt, label=above:{34}] at (70, 58) {};
+		\node[circle, fill=blue, inner sep=2pt, label=above:{35}] at (68.5, 59.5) {};
+		\node[circle, fill=blue, inner sep=2pt, label=above:{36}] at (68.5, 61) {};
+		\node[circle, fill=blue, inner sep=2pt, label=above:{37}] at (77, 61) {};
+		\node[circle, fill=blue, inner sep=2pt, label=above:{38}] at (79.5, 64.5) {};
+		\node[circle, fill=blue, inner sep=2pt, label=above:{39}] at (72, 63.5) {};
+		\node[circle, fill=blue, inner sep=2pt, label=above:{40}] at (76, 65) {};
+		\node[circle, fill=blue, inner sep=2pt, label=above:{41}] at (47.5, 96) {};
+		\node[circle, fill=blue, inner sep=2pt, label=above:{42}] at (9.5, 26) {};
+		\node[circle, fill=blue, inner sep=2pt, label=above:{43}] at (87.5, 92) {};
+		\node[circle, fill=blue, inner sep=2pt, label=above:{44}] at (70, 50) {};
+		\node[circle, fill=blue, inner sep=2pt, label=above:{45}] at (55.5, 81.5) {};
+		\node[circle, fill=blue, inner sep=2pt, label=above:{46}] at (83, 48.5) {};
+		\node[circle, fill=blue, inner sep=2pt, label=above:{47}] at (117, 6.5) {};
+		\node[circle, fill=blue, inner sep=2pt, label=above:{48}] at (83, 61) {};
+		\node[circle, fill=blue, inner sep=2pt, label=above:{49}] at (60.5, 62.5) {};
+		\node[circle, fill=blue, inner sep=2pt, label=above:{50}] at (59.5, 36) {};
+		\node[circle, fill=blue, inner sep=2pt, label=above:{51}] at (134, 72.5) {};
+		\node[circle, fill=blue, inner sep=2pt, label=above:{52}] at (174, 24.5) {};
+		
+		% Ścieżka
+		\draw[thick, red] (42, 55.5) -- (41.5, 63.5) -- (68.5, 59.5) -- (68.5, 61) -- (72, 63.5) -- (79.5, 64.5) -- (76, 65) -- (77, 61) -- (83, 61) -- (83.5, 62.5) -- (84.5, 65.5) -- (84.5, 68) -- (88, 66) -- (94.5, 68.5) -- (97.5, 58) -- (70, 58) -- (70, 50) -- (56.5, 57.5) -- (52, 58.5) -- (60.5, 62.5) -- (57.5, 66.5) -- (55.5, 81.5) -- (52.5, 100) -- (47.5, 96) -- (51, 87.5) -- (58, 117.5) -- (65, 113) -- (83, 48.5) -- (59.5, 36) -- (56, 36.5) -- (48, 41.5) -- (30, 46.5) -- (14.5, 66.5) -- (9.5, 26) -- (2.5, 18.5) -- (2.5, 23) -- (41, 25) -- (66, 18) -- (72.5, 37) -- (117, 6.5) -- (121.5, 24.5) -- (125, 40) -- (132, 31.5) -- (122, 58) -- (134, 72.5) -- (160.5, 62) -- (174, 24.5) -- (146.5, 20) -- (153, 0.5) -- (115, 116) -- (87.5, 92) -- (34.5, 75) -- (42, 55.5);
+		
+	\end{tikzpicture}
+\end{center}
+\item po wykonaniu piątej iteracji
+\begin{center}
+
+	\begin{tikzpicture}[scale=0.07, every node/.style={scale=0.8}]
+		% Oś układu współrzędnych
+		\draw[->] (0, 0) -- (180, 0) node[below] {X}; % Oś X
+		\draw[->] (0, 0) -- (0, 120) node[left] {Y};  % Oś Y
+		
+		% Podziałki na osi X
+		\foreach \x in {20, 40, 60, 80, 100, 120, 140, 160} {
+			\draw (\x, 0) -- (\x, -2) node[below] {\x};
+		}
+		% Podziałki na osi Y
+		\foreach \y in {20, 40, 60, 80, 100} {
+			\draw (0, \y) -- (-2, \y) node[left] {\y};
+		}
+		
+		% Punkty i ich etykiety
+		\node[circle, fill=blue, inner sep=2pt, label=above:{1}] at (56.5, 57.5) {};
+		\node[circle, fill=blue, inner sep=2pt, label=above:{2}] at (2.5, 18.5) {};
+		\node[circle, fill=blue, inner sep=2pt, label=above:{3}] at (34.5, 75) {};
+		\node[circle, fill=blue, inner sep=2pt, label=above:{4}] at (94.5, 68.5) {};
+		\node[circle, fill=blue, inner sep=2pt, label=above:{5}] at (84.5, 65.5) {};
+		\node[circle, fill=blue, inner sep=2pt, label=above:{6}] at (88, 66) {};
+		\node[circle, fill=blue, inner sep=2pt, label=above:{7}] at (2.5, 23) {};
+		\node[circle, fill=blue, inner sep=2pt, label=above:{8}] at (52.5, 100) {};
+		\node[circle, fill=blue, inner sep=2pt, label=above:{9}] at (58, 117.5) {};
+		\node[circle, fill=blue, inner sep=2pt, label=above:{10}] at (65, 113) {};
+		\node[circle, fill=blue, inner sep=2pt, label=above:{11}] at (160.5, 62) {};
+		\node[circle, fill=blue, inner sep=2pt, label=above:{12}] at (122, 58) {};
+		\node[circle, fill=blue, inner sep=2pt, label=above:{13}] at (146.5, 20) {};
+		\node[circle, fill=blue, inner sep=2pt, label=above:{14}] at (153, 0.5) {};
+		\node[circle, fill=blue, inner sep=2pt, label=above:{15}] at (84.5, 68) {};
+		\node[circle, fill=blue, inner sep=2pt, label=above:{16}] at (72.5, 37) {};
+		\node[circle, fill=blue, inner sep=2pt, label=above:{17}] at (14.5, 66.5) {};
+		\node[circle, fill=blue, inner sep=2pt, label=above:{18}] at (41.5, 63.5) {};
+		\node[circle, fill=blue, inner sep=2pt, label=above:{19}] at (51, 87.5) {};
+		\node[circle, fill=blue, inner sep=2pt, label=above:{20}] at (56, 36.5) {};
+		\node[circle, fill=blue, inner sep=2pt, label=above:{21}] at (30, 46.5) {};
+		\node[circle, fill=blue, inner sep=2pt, label=above:{22}] at (52, 58.5) {};
+		\node[circle, fill=blue, inner sep=2pt, label=above:{23}] at (48, 41.5) {};
+		\node[circle, fill=blue, inner sep=2pt, label=above:{24}] at (83.5, 62.5) {};
+		\node[circle, fill=blue, inner sep=2pt, label=above:{25}] at (97.5, 58) {};
+		\node[circle, fill=blue, inner sep=2pt, label=above:{26}] at (121.5, 24.5) {};
+		\node[circle, fill=blue, inner sep=2pt, label=above:{27}] at (132, 31.5) {};
+		\node[circle, fill=blue, inner sep=2pt, label=above:{28}] at (125, 40) {};
+		\node[circle, fill=blue, inner sep=2pt, label=above:{29}] at (66, 18) {};
+		\node[circle, fill=blue, inner sep=2pt, label=above:{30}] at (41, 25) {};
+		\node[circle, fill=blue, inner sep=2pt, label=above:{31}] at (42, 55.5) {};
+		\node[circle, fill=blue, inner sep=2pt, label=above:{32}] at (57.5, 66.5) {};
+		\node[circle, fill=blue, inner sep=2pt, label=above:{33}] at (115, 116) {};
+		\node[circle, fill=blue, inner sep=2pt, label=above:{34}] at (70, 58) {};
+		\node[circle, fill=blue, inner sep=2pt, label=above:{35}] at (68.5, 59.5) {};
+		\node[circle, fill=blue, inner sep=2pt, label=above:{36}] at (68.5, 61) {};
+		\node[circle, fill=blue, inner sep=2pt, label=above:{37}] at (77, 61) {};
+		\node[circle, fill=blue, inner sep=2pt, label=above:{38}] at (79.5, 64.5) {};
+		\node[circle, fill=blue, inner sep=2pt, label=above:{39}] at (72, 63.5) {};
+		\node[circle, fill=blue, inner sep=2pt, label=above:{40}] at (76, 65) {};
+		\node[circle, fill=blue, inner sep=2pt, label=above:{41}] at (47.5, 96) {};
+		\node[circle, fill=blue, inner sep=2pt, label=above:{42}] at (9.5, 26) {};
+		\node[circle, fill=blue, inner sep=2pt, label=above:{43}] at (87.5, 92) {};
+		\node[circle, fill=blue, inner sep=2pt, label=above:{44}] at (70, 50) {};
+		\node[circle, fill=blue, inner sep=2pt, label=above:{45}] at (55.5, 81.5) {};
+		\node[circle, fill=blue, inner sep=2pt, label=above:{46}] at (83, 48.5) {};
+		\node[circle, fill=blue, inner sep=2pt, label=above:{47}] at (117, 6.5) {};
+		\node[circle, fill=blue, inner sep=2pt, label=above:{48}] at (83, 61) {};
+		\node[circle, fill=blue, inner sep=2pt, label=above:{49}] at (60.5, 62.5) {};
+		\node[circle, fill=blue, inner sep=2pt, label=above:{50}] at (59.5, 36) {};
+		\node[circle, fill=blue, inner sep=2pt, label=above:{51}] at (134, 72.5) {};
+		\node[circle, fill=blue, inner sep=2pt, label=above:{52}] at (174, 24.5) {};
+		
+		% Ścieżka
+		\draw[thick, red] (14.5, 66.5) -- (34.5, 75) -- (41.5, 63.5) -- (72, 63.5) -- (76, 65) -- (79.5, 64.5) -- (77, 61) -- (83.5, 62.5) -- (83, 61) -- (84.5, 65.5) -- (84.5, 68) -- (88, 66) -- (94.5, 68.5) -- (97.5, 58) -- (122, 58) -- (125, 40) -- (132, 31.5) -- (121.5, 24.5) -- (117, 6.5) -- (153, 0.5) -- (146.5, 20) -- (174, 24.5) -- (160.5, 62) -- (134, 72.5) -- (115, 116) -- (87.5, 92) -- (65, 113) -- (58, 117.5) -- (52.5, 100) -- (47.5, 96) -- (51, 87.5) -- (83, 48.5) -- (70, 50) -- (70, 58) -- (68.5, 59.5) -- (68.5, 61) -- (60.5, 62.5) -- (57.5, 66.5) -- (56.5, 57.5) -- (52, 58.5) -- (42, 55.5) -- (30, 46.5) -- (48, 41.5) -- (56, 36.5) -- (59.5, 36) -- (72.5, 37) -- (66, 18) -- (41, 25) -- (9.5, 26) -- (2.5, 23) -- (2.5, 18.5) -- (14.5, 66.5);
+		
+	\end{tikzpicture}
+\end{center}
+\end{itemize}
+Na podstawie wykresów zaobserwować można stopniowe poprawianie się rozwiązania wraz z kolejnymi iteracjami algorytmu.
+\subsection{Finalizacja}
+Po wykonaniu dziesięciu iteracji dochodzimy do najlepszego wyniku uzyskiwanego przez naszą implementacje dla instancji berlin52 - długość trasy: 7544,37.
+\begin{center}
+	\begin{tikzpicture}[scale=0.08, every node/.style={scale=0.8}]
+		% Oś układu współrzędnych
+		% Układ współrzędnych
+		\draw[->] (0, 0) -- (180, 0) node[below] {X}; % Oś X
+		\draw[->] (0, 0) -- (0, 120) node[left] {Y};  % Oś Y
+		
+		% Podziałki na osi X
+		\foreach \x in {20, 40, 60, 80, 100, 120, 140, 160} {
+			\draw (\x, 0) -- (\x, -2) node[below] {\x};
+		}
+		
+		% Podziałki na osi Y
+		\foreach \y in {20, 40, 60, 80, 100} {
+			\draw (0, \y) -- (-2, \y) node[left] {\y};
+		}
+		
+		% Punkty i ich etykiety
+		\node[circle, fill=blue, inner sep=2pt, label=above:{1}] at (56.5, 57.5) {};
+		\node[circle, fill=blue, inner sep=2pt, label=above:{2}] at (2.5, 18.5) {};
+		\node[circle, fill=blue, inner sep=2pt, label=above:{3}] at (34.5, 75) {};
+		\node[circle, fill=blue, inner sep=2pt, label=above:{4}] at (94.5, 68.5) {};
+		\node[circle, fill=blue, inner sep=2pt, label=above:{5}] at (84.5, 65.5) {};
+		\node[circle, fill=blue, inner sep=2pt, label=above:{6}] at (88, 66) {};
+		\node[circle, fill=blue, inner sep=2pt, label=above:{7}] at (2.5, 23) {};
+		\node[circle, fill=blue, inner sep=2pt, label=above:{8}] at (52.5, 100) {};
+		\node[circle, fill=blue, inner sep=2pt, label=above:{9}] at (58, 117.5) {};
+		\node[circle, fill=blue, inner sep=2pt, label=above:{10}] at (65, 113) {};
+		\node[circle, fill=blue, inner sep=2pt, label=above:{11}] at (160.5, 62) {};
+		\node[circle, fill=blue, inner sep=2pt, label=above:{12}] at (122, 58) {};
+		\node[circle, fill=blue, inner sep=2pt, label=above:{13}] at (146.5, 20) {};
+		\node[circle, fill=blue, inner sep=2pt, label=above:{14}] at (153, 0.5) {};
+		\node[circle, fill=blue, inner sep=2pt, label=above:{15}] at (84.5, 68) {};
+		\node[circle, fill=blue, inner sep=2pt, label=above:{16}] at (72.5, 37) {};
+		\node[circle, fill=blue, inner sep=2pt, label=above:{17}] at (14.5, 66.5) {};
+		\node[circle, fill=blue, inner sep=2pt, label=above:{18}] at (41.5, 63.5) {};
+		\node[circle, fill=blue, inner sep=2pt, label=above:{19}] at (51, 87.5) {};
+		\node[circle, fill=blue, inner sep=2pt, label=above:{20}] at (56, 36.5) {};
+		\node[circle, fill=blue, inner sep=2pt, label=above:{21}] at (30, 46.5) {};
+		\node[circle, fill=blue, inner sep=2pt, label=above:{22}] at (52, 58.5) {};
+		\node[circle, fill=blue, inner sep=2pt, label=above:{23}] at (48, 41.5) {};
+		\node[circle, fill=blue, inner sep=2pt, label=above:{24}] at (83.5, 62.5) {};
+		\node[circle, fill=blue, inner sep=2pt, label=above:{25}] at (97.5, 58) {};
+		\node[circle, fill=blue, inner sep=2pt, label=above:{26}] at (121.5, 24.5) {};
+		\node[circle, fill=blue, inner sep=2pt, label=above:{27}] at (132, 31.5) {};
+		\node[circle, fill=blue, inner sep=2pt, label=above:{28}] at (125, 40) {};
+		\node[circle, fill=blue, inner sep=2pt, label=above:{29}] at (66, 18) {};
+		\node[circle, fill=blue, inner sep=2pt, label=above:{30}] at (41, 25) {};
+		\node[circle, fill=blue, inner sep=2pt, label=above:{31}] at (42, 55.5) {};
+		\node[circle, fill=blue, inner sep=2pt, label=above:{32}] at (57.5, 66.5) {};
+		\node[circle, fill=blue, inner sep=2pt, label=above:{33}] at (115, 116) {};
+		\node[circle, fill=blue, inner sep=2pt, label=above:{34}] at (70, 58) {};
+		\node[circle, fill=blue, inner sep=2pt, label=above:{35}] at (68.5, 59.5) {};
+		\node[circle, fill=blue, inner sep=2pt, label=above:{36}] at (68.5, 61) {};
+		\node[circle, fill=blue, inner sep=2pt, label=above:{37}] at (77, 61) {};
+		\node[circle, fill=blue, inner sep=2pt, label=above:{38}] at (79.5, 64.5) {};
+		\node[circle, fill=blue, inner sep=2pt, label=above:{39}] at (72, 63.5) {};
+		\node[circle, fill=blue, inner sep=2pt, label=above:{40}] at (76, 65) {};
+		\node[circle, fill=blue, inner sep=2pt, label=above:{41}] at (47.5, 96) {};
+		\node[circle, fill=blue, inner sep=2pt, label=above:{42}] at (9.5, 26) {};
+		\node[circle, fill=blue, inner sep=2pt, label=above:{43}] at (87.5, 92) {};
+		\node[circle, fill=blue, inner sep=2pt, label=above:{44}] at (70, 50) {};
+		\node[circle, fill=blue, inner sep=2pt, label=above:{45}] at (55.5, 81.5) {};
+		\node[circle, fill=blue, inner sep=2pt, label=above:{46}] at (83, 48.5) {};
+		\node[circle, fill=blue, inner sep=2pt, label=above:{47}] at (117, 6.5) {};
+		\node[circle, fill=blue, inner sep=2pt, label=above:{48}] at (83, 61) {};
+		\node[circle, fill=blue, inner sep=2pt, label=above:{49}] at (60.5, 62.5) {};
+		\node[circle, fill=blue, inner sep=2pt, label=above:{50}] at (59.5, 36) {};
+		\node[circle, fill=blue, inner sep=2pt, label=above:{51}] at (134, 72.5) {};
+		\node[circle, fill=blue, inner sep=2pt, label=above:{52}] at (174, 24.5) {};
+		
+		% Trasa
+		\draw[red, thick] 
+		(72.5, 37) -- (83, 48.5) -- (70, 50) -- (70, 58) -- 
+		(68.5, 59.5) -- (68.5, 61) -- (72, 63.5) -- (76, 65) --
+		(77, 61) -- (79.5, 64.5) -- (83, 61) -- (83.5, 62.5) --
+		(84.5, 65.5) -- (84.5, 68) -- (88, 66) -- (94.5, 68.5) --
+		(97.5, 58) -- (122, 58) -- (125, 40) -- (132, 31.5) --
+		(121.5, 24.5) -- (117, 6.5) -- (146.5, 20) -- (153, 0.5) --
+		(174, 24.5) -- (160.5, 62) -- (134, 72.5) -- (115, 116) --
+		(87.5, 92) -- (65, 113) -- (58, 117.5) -- (52.5, 100) --
+		(47.5, 96) -- (51, 87.5) -- (55.5, 81.5) -- (57.5, 66.5) --
+		(60.5, 62.5) -- (56.5, 57.5) -- (52, 58.5) -- (42, 55.5) --
+		(41.5, 63.5) -- (34.5, 75) -- (14.5, 66.5) -- (30, 46.5) --
+		(9.5, 26) -- (2.5, 23) -- (2.5, 18.5) -- (41, 25) --
+		(48, 41.5) -- (56, 36.5) -- (59.5, 36) -- (66, 18) --
+		(72.5, 37);
+	\end{tikzpicture}
+	\end{center}
+	\newpage
+
+\subsection{Wykresy}
+\begin{itemize}
+	\item porównanie wyników uzyskanych algorytmem mrówkowym i zachłannym dla losowych instancji o różnej wielkości
+	\begin{center}
+	\begin{tikzpicture}
+	
+		\begin{axis}[
+			ybar, % Typ wykresu: słupkowy
+			symbolic x coords={10,20,30,40,50,60,70,80,90,100,110,120,130,140,150}, % Oznaczenia osi X
+			xtick=data, % Ustawienia dla osi X
+			nodes near coords, % Pokazuje wartości nad słupkami
+			 every node near coord/.append style={
+				font=\tiny,
+				rotate=90,  % obrót tekstu o 90 stopni
+				anchor=west % punkt zaczepienia tekstu
+			},
+			ylabel={Długość trasy}, % Etykieta osi Y
+			xlabel={Ilość punktów}, % Etykieta osi X
+			ymin=3000, 
+			ymax=14000, % Zakres osi Y
+			width=15cm, height=8.1cm, % Rozmiar wykresu
+			bar width=4pt, % Szerokość słupków
+			%enlarge x limits=0.2, % Odstęp między kategoriami
+			%legend style={at={(0.5,-0.15)}, anchor=north, legend columns=2},
+			%scaled y ticks=false,  % dodane
+			%tick align=outside,    % dodane
+			scaled y ticks=false,
+			tick align=outside,
+			        legend style={
+				at={(0.5,-0.2)},  % pozycja legendy (x,y)
+				anchor=north,     % punkt zaczepienia legendy
+				legend columns=2, % liczba kolumn w legendzie
+				draw=black,      % obramowanie legendy
+				fill=white,      % tło legendy
+			},
+			]
+			% Dane do wykresu
+			\addplot[fill=blue] coordinates {(10,3667.65) (20,4371.62) (30,5713.31) (40,6671.45) (50,7365.34) (60,7417.59) (70,7781.98) (80,9164.36) (90,9519.24) (100,9334.52) (110,9133.41) (120,10742.44) (130,10402.60) (140,10479.71) (150,11381.51)};
+			\addlegendentry{Algorytm zachłanny} % Etykieta dla pierwszej serii
+			
+			\addplot[fill=red] coordinates {(10,3126.33) (20,4158.56) (30,4840.34) (40,5388.03) (50,6442.92) (60,6161.53) (70,6864.08) (80,7529.12) (90,7943.88) (100,7981.41) (110,8442.63) (120,9031.64) (130,9056.95) (140,9565.09) (150,9314.25)};
+			\addlegendentry{Algorytm mrówkowy} % Etykieta dla drugiej serii
+		\end{axis}
+	\end{tikzpicture}
+		\end{center}
+	\item wartość błędu względnego naszego algorytmu w stosunku do wartości optymalnej dla wybranych benchmarków
+		\begin{center}
+		\begin{tikzpicture}
+			
+			\begin{axis}[
+				ybar, % Typ wykresu: słupkowy
+				symbolic x coords={berlin52,bier127,a280,att48,ch130,brg180,bays29,d1291,eil101,tsp225}, % Oznaczenia osi X
+				xtick=data, % Ustawienia dla osi X
+				nodes near coords, % Pokazuje wartości nad słupkami
+				every node near coord/.append style={
+					font=\tiny,
+					rotate=90,  % obrót tekstu o 90 stopni
+					anchor=west % punkt zaczepienia tekstu
+				},
+				ylabel={Długość trasy}, % Etykieta osi Y
+				xlabel={Nazwa instancji}, % Etykieta osi X
+				ymin=0, 
+				ymax=11, % Zakres osi Y
+				width=15cm, height=8.1cm, % Rozmiar wykresu
+				bar width=4pt, % Szerokość słupków
+				%enlarge x limits=0.2, % Odstęp między kategoriami
+				%legend style={at={(0.5,-0.15)}, anchor=north, legend columns=2},
+				%scaled y ticks=false,  % dodane
+				%tick align=outside,    % dodane
+				scaled y ticks=false,
+				tick align=outside,
+				legend style={
+					at={(0.5,-0.2)},  % pozycja legendy (x,y)
+					anchor=north,     % punkt zaczepienia legendy
+					legend columns=2, % liczba kolumn w legendzie
+					draw=black,      % obramowanie legendy
+					fill=white,      % tło legendy
+				},
+				]
+				% Dane do wykresu
+				\addplot[fill=blue] coordinates {(berlin52,0.031) (bier127,3.484) (a280,5) (att48,1) (ch130,4) (brg180,1) (bays29,2) (d1291,1) (eil101,10.6) (tsp225,3)};
+				\addlegendentry{Błąd względny} % Etykieta dla pierwszej serii
+				
+			\end{axis}
+		\end{tikzpicture}
+	\end{center}
+\end{itemize}
+\newpage
+\subsection{Wyniki dla instancji rankingowych}
+\begin{table}[h!]
+	\centering
+	\begin{tabular}{|c|c|}
+		\hline
+		Nazwa instancji & Uzyskany wynik\\ \hline
+		berlin52 & 7544,37 \\ \hline
+		bier127 & 122402,23 \\ \hline
+		tsp1000 & 24246 \\ \hline
+		tsp500 & 92214,46 \\ \hline
+		tsp250 & 13071,16  \\ \hline
+	\end{tabular}
+\end{table}
+
+\end{document}
