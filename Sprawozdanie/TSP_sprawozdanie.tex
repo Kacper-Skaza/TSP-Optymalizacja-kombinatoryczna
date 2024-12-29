@@ -521,7 +521,7 @@ Po wykonaniu dziesięciu iteracji dochodzimy do najlepszego wyniku uzyskiwanego 
 			
 			\begin{axis}[
 				ybar, % Typ wykresu: słupkowy
-				symbolic x coords={berlin52,bier127,a280,att48,ch130,brg180,bays29,d1291,eil101,tsp225}, % Oznaczenia osi X
+				symbolic x coords={berlin52,bier127,kroB150,kroB100,kroE100,kroA150,kroA100,kroC100,lin105,kroD100}, % Oznaczenia osi X
 				xtick=data, % Ustawienia dla osi X
 				nodes near coords, % Pokazuje wartości nad słupkami
 				every node near coord/.append style={
@@ -550,7 +550,7 @@ Po wykonaniu dziesięciu iteracji dochodzimy do najlepszego wyniku uzyskiwanego 
 				},
 				]
 				% Dane do wykresu
-				\addplot[fill=blue] coordinates {(berlin52,0.031) (bier127,3.484) (a280,5) (att48,1) (ch130,4) (brg180,1) (bays29,2) (d1291,1) (eil101,10.6) (tsp225,3)};
+				\addplot[fill=blue] coordinates {(berlin52,0.031) (bier127,3.484) (kroB150,7.87) (kroB100,3.91) (kroE100,5.96) (kroA150,8.38) (kroA100,5.75) (kroC100,4.22) (lin105,1.45) (kroD100,5.96)};
 				\addlegendentry{Błąd względny} % Etykieta dla pierwszej serii
 				
 			\end{axis}
