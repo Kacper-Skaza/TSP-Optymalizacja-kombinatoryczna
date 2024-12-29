@@ -6,3 +6,9 @@
 # IDE files and directories
 *.dev
 *.layout
+*.vscode/
+
+# LaTeX files
+*.aux
+*.log
+*.synctex.gz
